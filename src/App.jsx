@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import cssLogo from './assets/images/css_logo.jpg'
+import gdgLogo from './assets/images/gdg_logo.png'
+import profilePhoto from './assets/images/profile.JPG'
 
 const projects = [
   {
@@ -124,13 +127,41 @@ function ProjectCard({ project }) {
 }
 
 function App() {
-  const [selectedTechnology, setSelectedTechnology] = useState(null)
+  const cursorGlowRef = useRef(null)
+  const cursorAnimationFrameRef = useRef(0)
   const [introPhase, setIntroPhase] = useState(() => (
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'done' : 'show'
   ))
-  const visibleProjects = selectedTechnology
-    ? projects.filter((project) => project.technologies.includes(selectedTechnology))
-    : projects
+
+  useEffect(() => {
+    const glow = cursorGlowRef.current
+    const supportsCursorGlow = window.matchMedia(
+      '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)',
+    ).matches
+
+    if (!glow || !supportsCursorGlow) {
+      return undefined
+    }
+
+    const updateGlowPosition = (event) => {
+      window.cancelAnimationFrame(cursorAnimationFrameRef.current)
+      cursorAnimationFrameRef.current = window.requestAnimationFrame(() => {
+        glow.style.setProperty('--cursor-x', `${event.clientX}px`)
+        glow.style.setProperty('--cursor-y', `${event.clientY}px`)
+        glow.classList.add('is-visible')
+      })
+    }
+    const hideGlow = () => glow.classList.remove('is-visible')
+
+    window.addEventListener('pointermove', updateGlowPosition)
+    document.documentElement.addEventListener('pointerleave', hideGlow)
+
+    return () => {
+      window.cancelAnimationFrame(cursorAnimationFrameRef.current)
+      window.removeEventListener('pointermove', updateGlowPosition)
+      document.documentElement.removeEventListener('pointerleave', hideGlow)
+    }
+  }, [])
 
   useEffect(() => {
     if (introPhase === 'done') {
@@ -141,7 +172,7 @@ function App() {
     document.body.style.overflow = 'hidden'
     const timer = window.setTimeout(() => {
       setIntroPhase(introPhase === 'show' ? 'exit' : 'done')
-    }, introPhase === 'show' ? 3900 : 1300)
+    }, introPhase === 'show' ? 4300 : 850)
 
     return () => {
       window.clearTimeout(timer)
@@ -151,29 +182,28 @@ function App() {
 
   return (
     <div className="portfolio">
+      <div className="cursor-glow" ref={cursorGlowRef} aria-hidden="true" />
       {introPhase !== 'done' && (
-        <div className={`intro-screen${introPhase === 'exit' ? ' is-exiting' : ''}`} role="status" aria-label="Loading portfolio">
+        <div className={`intro-screen${introPhase === 'exit' ? ' is-exiting' : ''}`} role="status" aria-label="Opening portfolio">
           <div className="intro-content">
-            <span className="intro-mark">A<span>I</span></span>
-            <p className="intro-name">ALIEYANDREW IDALA</p>
-            <p className="intro-caption">SOFTWARE / DEVELOPMENT</p>
-          </div>
-        </div>
-      )}
-      {introPhase !== 'done' && (
-        <div className="intro-train-layer" aria-hidden="true">
-          <div className="intro-track">
-            <span className="intro-rail" />
-            <div className="intro-train">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div className="train-car" key={index}><i /><i /><i /></div>
-              ))}
-              <div className="train-engine">
-                <i className="train-cabin" />
-                <i className="train-window" />
-                <i className="train-nose" />
-                <i className="train-light" />
+            <div className="intro-letter-stage" aria-hidden="true">
+              <span className="intro-letter">A</span>
+              <div className="intro-shards">
+                <span className="intro-shard intro-shard--one">A</span>
+                <span className="intro-shard intro-shard--two">A</span>
+                <span className="intro-shard intro-shard--three">A</span>
+                <span className="intro-shard intro-shard--four">A</span>
+                <span className="intro-shard intro-shard--five">A</span>
+                <span className="intro-shard intro-shard--six">A</span>
+                <span className="intro-shard intro-shard--seven">A</span>
+                <span className="intro-shard intro-shard--eight">A</span>
+                <span className="intro-shard intro-shard--nine">A</span>
+                <span className="intro-shard intro-shard--ten">A</span>
               </div>
+            </div>
+            <div className="intro-copy">
+              <p className="intro-name">ALIEYANDREW IDALA</p>
+              <p className="intro-caption">WEB PORTFOLIO</p>
             </div>
           </div>
         </div>
@@ -181,7 +211,7 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#home" aria-label="Alieyandrew Juhanes B. Idala, home">
           <span className="brand-mark">A<span>I</span></span>
-          <span className="brand-label">ALIEYANDREW IDALA<br />SOFTWARE / DEVELOPMENT</span>
+          <span className="brand-label">ALIEYANDREW IDALA<br />WEB PORTFOLIO</span>
         </a>
         <nav className="main-nav" aria-label="Main navigation">
           <a href="#work">Projects</a>
@@ -193,7 +223,7 @@ function App() {
       <main>
         <section className="hero section-wrap" id="home">
           <div className="hero-copy">
-            <p className="eyebrow"><span className="status-dot" /> SOFTWARE / DEVELOPMENT</p>
+            <p className="eyebrow"><span className="status-dot" /> WEB PORTFOLIO</p>
             <h1>
               Alieyandrew Juhanes B. <span className="pink-underline">Idala_</span>
             </h1>
@@ -217,22 +247,18 @@ function App() {
             </div>
           </div>
 
-          <div className="hero-visual" aria-label="Illustrated portrait of Alieyandrew Juhanes B. Idala">
+          <div className="hero-visual">
             <div className="portrait-frame">
-              <div className="portrait-grid" />
-              <div className="portrait-sun" />
-              <div className="portrait-figure">
-                <div className="figure-hair" />
-                <div className="figure-head">
-                  <span className="figure-ear" />
-                  <span className="figure-neck" />
-                </div>
-                <div className="figure-body" />
-                <div className="figure-shine" />
-              </div>
+              <img
+                className="portrait-image"
+                src={profilePhoto}
+                alt="Alieyandrew Juhanes B. Idala in graduation attire"
+              />
               <div className="portrait-note"><span>✳</span> ALIEYANDREW IDALA</div>
             </div>
             <div className="visual-sticker" aria-hidden="true">MADE<br />WITH<br /><span>CARE</span></div>
+            <div className="visual-sticker visual-sticker--design" aria-hidden="true">UI/UX<br /><span>IN PROGRESS</span></div>
+            <div className="visual-sticker visual-sticker--ideas" aria-hidden="true">IDEAS<br />INTO<br /><span>DESIGN</span></div>
             <p className="visual-caption">A SMALL INTRODUCTION <span>↘</span></p>
           </div>
         </section>
@@ -242,14 +268,10 @@ function App() {
             My <span className="heading-accent">Projects</span>
           </SectionHeading>
           <p className="section-intro">
-            {selectedTechnology
-              ? `Projects built with ${selectedTechnology}. Select it again to show all projects.`
-              : 'Projects built with Java, web technologies, and JavaScript.'}
+            Projects built with Java, web technologies, and JavaScript.
           </p>
           <div className="project-grid">
-            {visibleProjects.length > 0
-              ? visibleProjects.map((project) => <ProjectCard key={project.number} project={project} />)
-              : <p className="project-empty">No featured projects use {selectedTechnology} yet.</p>}
+            {projects.map((project) => <ProjectCard key={project.number} project={project} />)}
           </div>
           <a className="work-footnote" href="https://github.com/Kalo-Aji" target="_blank" rel="noreferrer">
             <span>✳</span> EXPLORE MORE PUBLIC REPOSITORIES ON GITHUB <ArrowIcon diagonal />
@@ -268,35 +290,21 @@ function App() {
           <div className="experience-list">
             <article className="experience-card">
               <div className="experience-card-meta">
-                <span className="experience-card-mark" aria-hidden="true">✳</span>
+                <img className="experience-card-logo" src={cssLogo} alt="CIT-U Computer Students’ Society logo" />
                 <span className="experience-card-tag">CURRENT ROLE</span>
+                <span className="experience-card-date">2026 — CURRENT</span>
               </div>
               <h3>Quality Assurance Officer</h3>
               <p className="experience-card-context">CIT-U Computer Students’ Society · Committee on Public Relations</p>
             </article>
             <article className="experience-card">
               <div className="experience-card-meta">
-                <span className="experience-card-mark" aria-hidden="true">✳</span>
+                <img className="experience-card-logo" src={gdgLogo} alt="Google Developer Groups on Campus at CIT-U logo" />
                 <span className="experience-card-tag">CURRENT ROLE</span>
+                <span className="experience-card-date">2026 — CURRENT</span>
               </div>
               <h3>Budget Management Officer</h3>
               <p className="experience-card-context">Google Developer Group in CIT-U · Committee on Finance</p>
-            </article>
-            <article className="experience-card">
-              <div className="experience-card-meta">
-                <span className="experience-card-mark" aria-hidden="true">✳</span>
-                <span className="experience-card-tag">PROJECT EXPERIENCE</span>
-                <span className="experience-card-date">JAN 2026 — APR 2026</span>
-              </div>
-              <h3>Game Developer &amp; Q.A.</h3>
-              <p className="experience-card-context">Five-Six · OOP 2 Final Project</p>
-              <p className="experience-card-description">
-                Helped develop Five-Six using Java Swing and Java AWT, and handled
-                quality assurance and testing.
-              </p>
-              <a className="text-link experience-card-link" href="https://github.com/Kalo-Aji/Five-Six" target="_blank" rel="noreferrer">
-                View source code <ArrowIcon diagonal />
-              </a>
             </article>
           </div>
         </section>
@@ -311,7 +319,8 @@ function App() {
                 <p className="about-summary">
                   I’m Alieyandrew Juhanes B. Idala, a developer who enjoys turning
                   ideas into useful digital experiences. I care about clean code,
-                  thoughtful interfaces, and solving problems through software.
+                  thoughtful interfaces, and solving problems through software. I
+                  also enjoy UI/UX and graphic design.
                 </p>
               </div>
               <div className="about-tech">
@@ -322,26 +331,12 @@ function App() {
                       <p>{group.name}</p>
                       <div className="about-skill-list">
                         {group.skills.map((skill) => (
-                          <button
-                            className={`about-skill${selectedTechnology === skill ? ' is-selected' : ''}`}
-                            type="button"
-                            aria-pressed={selectedTechnology === skill}
-                            key={skill}
-                            onClick={() => setSelectedTechnology(selectedTechnology === skill ? null : skill)}
-                          >
-                            {skill}<span aria-hidden="true">+</span>
-                          </button>
+                          <span className="about-skill" key={skill}>{skill}</span>
                         ))}
                       </div>
                     </div>
                   ))}
                 </div>
-                {selectedTechnology && (
-                  <p className="about-tech-selection">
-                    Filtering projects by {selectedTechnology}.{' '}
-                    <a className="text-link" href="#work">View projects <ArrowIcon /></a>
-                  </p>
-                )}
               </div>
               <div className="about-highlights">
                 <article className="about-highlight">
@@ -359,10 +354,6 @@ function App() {
                   <h3>Where I contribute</h3>
                   <p>Supporting student technology communities through quality assurance and budget management.</p>
                 </article>
-              </div>
-              <div className="about-role-tags" aria-label="Current leadership roles">
-                <span>CSS · Quality Assurance Officer</span>
-                <span>GDG CIT-U · Budget Management Officer</span>
               </div>
             </div>
           </div>
@@ -395,7 +386,7 @@ function App() {
       <footer className="site-footer section-wrap">
         <a className="brand" href="#home" aria-label="Alieyandrew Juhanes B. Idala, back to top">
           <span className="brand-mark">A<span>I</span></span>
-          <span className="brand-label">ALIEYANDREW IDALA<br />SOFTWARE / DEVELOPMENT</span>
+          <span className="brand-label">ALIEYANDREW IDALA<br />WEB PORTFOLIO</span>
         </a>
         <p>FULL-STACK DEVELOPER · IMPACTFUL DIGITAL EXPERIENCES</p>
         <span className="footer-year">© 2026 Alieyandrew Juhanes B. Idala</span>
